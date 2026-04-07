@@ -1,0 +1,7 @@
+{
+  "env": "production",
+  "build": {
+    "src": "src/server.js",
+    "builder": "node"
+  }
+}

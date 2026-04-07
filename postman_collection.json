@@ -1,0 +1,208 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "School Management API",
+    "description": "Complete Postman collection for the School Management REST API.\n\nBase URL: http://localhost:3000\n\nEndpoints:\n- POST /api/schools  — Add a new school\n- GET  /api/schools  — List schools sorted by proximity\n- GET  /api/schools/:id — Get school by ID\n- GET  /health       — Health check",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Verifies the API server is running and returns uptime information."
+      },
+      "response": [
+        {
+          "name": "200 OK — Server Healthy",
+          "status": "OK",
+          "code": 200,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"message\": \"School Management API is healthy\",\n  \"data\": {\n    \"timestamp\": \"2024-01-15T10:30:00.000Z\",\n    \"uptime\": 120.5,\n    \"environment\": \"development\",\n    \"version\": \"1.0.0\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Schools",
+      "item": [
+        {
+          "name": "Add School — Success",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Delhi Public School\",\n  \"address\": \"15 Ring Road, New Delhi, Delhi 110001\",\n  \"latitude\": 28.6139,\n  \"longitude\": 77.2090\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/schools",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schools"]
+            },
+            "description": "Adds a new school with valid name, address, latitude, and longitude."
+          },
+          "response": [
+            {
+              "name": "201 Created — School Added",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"School added successfully.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Delhi Public School\",\n    \"address\": \"15 Ring Road, New Delhi, Delhi 110001\",\n    \"latitude\": 28.6139,\n    \"longitude\": 77.2090,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\",\n    \"updatedAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add School — Validation Error (missing name)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"Some Address\",\n  \"latitude\": 28.6139,\n  \"longitude\": 77.2090\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/schools",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schools"]
+            },
+            "description": "Demonstrates validation failure when required field 'name' is missing."
+          },
+          "response": [
+            {
+              "name": "400 Validation Failed",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed.\",\n  \"data\": null,\n  \"errors\": [\n    \"name is required.\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add School — Validation Error (invalid latitude)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test School\",\n  \"address\": \"123 Main Street, City\",\n  \"latitude\": 200,\n  \"longitude\": 77.2090\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/schools",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schools"]
+            },
+            "description": "Demonstrates validation failure when latitude is out of range (-90 to 90)."
+          },
+          "response": [
+            {
+              "name": "400 Invalid Latitude",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed.\",\n  \"data\": null,\n  \"errors\": [\n    \"latitude must be <= 90.\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Schools by Proximity — Delhi",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/schools?latitude=28.6139&longitude=77.2090",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schools"],
+              "query": [
+                { "key": "latitude", "value": "28.6139", "description": "User latitude (New Delhi)" },
+                { "key": "longitude", "value": "77.2090", "description": "User longitude (New Delhi)" }
+              ]
+            },
+            "description": "Lists all schools sorted by distance from New Delhi (28.6139, 77.2090) using Haversine formula."
+          },
+          "response": [
+            {
+              "name": "200 OK — Schools Sorted",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Schools retrieved and sorted by distance.\",\n  \"data\": {\n    \"totalCount\": 3,\n    \"userLocation\": {\n      \"latitude\": 28.6139,\n      \"longitude\": 77.209\n    },\n    \"schools\": [\n      {\n        \"id\": 1,\n        \"name\": \"Delhi Public School\",\n        \"address\": \"15 Ring Road, New Delhi, Delhi 110001\",\n        \"latitude\": 28.6139,\n        \"longitude\": 77.209,\n        \"createdAt\": \"2024-01-15T10:30:00.000Z\",\n        \"updatedAt\": \"2024-01-15T10:30:00.000Z\",\n        \"distance\": 0\n      },\n      {\n        \"id\": 2,\n        \"name\": \"Modern School, Barakhamba Road\",\n        \"address\": \"Barakhamba Road, Connaught Place, New Delhi 110001\",\n        \"latitude\": 28.6284,\n        \"longitude\": 77.2244,\n        \"createdAt\": \"2024-01-15T10:31:00.000Z\",\n        \"updatedAt\": \"2024-01-15T10:31:00.000Z\",\n        \"distance\": 1.98\n      },\n      {\n        \"id\": 3,\n        \"name\": \"The Doon School\",\n        \"address\": \"Mall Road, Dehradun, Uttarakhand 248001\",\n        \"latitude\": 30.3256,\n        \"longitude\": 78.0335,\n        \"createdAt\": \"2024-01-15T10:32:00.000Z\",\n        \"updatedAt\": \"2024-01-15T10:32:00.000Z\",\n        \"distance\": 198.42\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Schools — Missing Coordinates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/schools",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schools"]
+            },
+            "description": "Missing latitude/longitude triggers validation error."
+          },
+          "response": [
+            {
+              "name": "400 Missing Query Params",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed.\",\n  \"data\": null,\n  \"errors\": [\n    \"latitude query param is required.\",\n    \"longitude query param is required.\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get School by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/schools/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schools", "1"]
+            },
+            "description": "Fetches a single school record by its primary key ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"School retrieved successfully.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Delhi Public School\",\n    \"address\": \"15 Ring Road, New Delhi, Delhi 110001\",\n    \"latitude\": 28.6139,\n    \"longitude\": 77.209,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\",\n    \"updatedAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"School with id=999 not found.\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
