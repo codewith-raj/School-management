@@ -11,6 +11,7 @@ const config = {
   port: parseInt(process.env.PORT, 10) || 3000,
 
   database: {
+    url: process.env.DATABASE_URL || '',
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     name: process.env.DB_NAME || 'school_management_db',
@@ -26,8 +27,9 @@ const config = {
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     dialectOptions: {
       // Needed for Railway / PlanetScale hosted MySQL
-      ssl:
-        process.env.NODE_ENV === 'production'
+      ssl: process.env.DATABASE_URL
+        ? { require: true, rejectUnauthorized: false }
+        : process.env.NODE_ENV === 'production'
           ? { rejectUnauthorized: true }
           : false,
     },

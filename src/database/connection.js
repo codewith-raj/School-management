@@ -7,24 +7,30 @@ const logger = require('../utils/logger');
 /**
  * Singleton Sequelize instance shared across the entire application.
  */
-const sequelize = new Sequelize(
-  config.database.name,
-  config.database.username,
-  config.database.password,
-  {
-    host: config.database.host,
-    port: config.database.port,
-    dialect: config.database.dialect,
-    pool: config.database.pool,
-    logging: config.database.logging,
-    dialectOptions: config.database.dialectOptions,
-    define: {
-      underscored: false,       // use camelCase in JS, but Sequelize maps to snake via field options
-      freezeTableName: false,   // allows Sequelize to pluralise
-      timestamps: true,
-    },
-  }
-);
+const sequelizeOptions = {
+  dialect: config.database.dialect,
+  pool: config.database.pool,
+  logging: config.database.logging,
+  dialectOptions: config.database.dialectOptions,
+  define: {
+    underscored: false,       // use camelCase in JS, but Sequelize maps to snake via field options
+    freezeTableName: false,   // allows Sequelize to pluralise
+    timestamps: true,
+  },
+};
+
+const sequelize = config.database.url
+  ? new Sequelize(config.database.url, sequelizeOptions)
+  : new Sequelize(
+      config.database.name,
+      config.database.username,
+      config.database.password,
+      {
+        ...sequelizeOptions,
+        host: config.database.host,
+        port: config.database.port,
+      }
+    );
 
 /**
  * connectDatabase — authenticates + syncs all models.
