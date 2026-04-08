@@ -1,7 +1,7 @@
 'use strict';
 
 const schoolService = require('../services/schoolService');
-const { sendSuccess, sendError } = require('../utils/responseHelper');
+const { sendSuccess } = require('../utils/responseHelper');
 const logger = require('../utils/logger');
 
 /**

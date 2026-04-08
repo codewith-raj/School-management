@@ -430,4 +430,4 @@ Implementation: [`src/utils/haversine.js`](src/utils/haversine.js)
 
 ## 📜 License
 
-MIT © 2024 — School Management API
+RAJ © 2026 — School Management API

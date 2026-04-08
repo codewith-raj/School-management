@@ -7,7 +7,6 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/database/seeders/schoolSeeder.js",
-    "migrate": "node src/database/migrations/migrate.js",
     "lint": "eslint src/ --ext .js",
     "test": "echo \"No tests configured yet\" && exit 0"
   },
@@ -35,7 +34,6 @@
     "sequelize": "^6.37.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
-    "uuid": "^9.0.1",
     "winston": "^3.13.0"
   },
   "devDependencies": {
