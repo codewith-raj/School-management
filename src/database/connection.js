@@ -50,7 +50,7 @@ async function connectDatabase() {
       logger.info('✅ Database models synchronised.');
     }
   } catch (error) {
-    logger.error('❌ Unable to connect to database:', error.message);
+    logger.error(`❌ Unable to connect to database: ${error.message}`);
     throw error;
   }
 }
