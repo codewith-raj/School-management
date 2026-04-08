@@ -69,8 +69,8 @@ A production-grade RESTful API for managing school records with **geolocation-ba
             address: { type: 'string', example: '15 Ring Road, New Delhi 110001' },
             latitude: { type: 'number', format: 'float', example: 28.6139 },
             longitude: { type: 'number', format: 'float', example: 77.2090 },
-            createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' },
+            created_at: { type: 'string', format: 'date-time' },
+            updated_at: { type: 'string', format: 'date-time' },
           },
         },
         SchoolWithDistance: {
@@ -105,6 +105,11 @@ A production-grade RESTful API for managing school records with **geolocation-ba
             success: { type: 'boolean', example: true },
             message: { type: 'string', example: 'Operation successful' },
             data: { type: 'object' },
+            errors: {
+              type: 'array',
+              items: { type: 'string' },
+              example: [],
+            },
           },
         },
         ErrorResponse: {
@@ -123,7 +128,7 @@ A production-grade RESTful API for managing school records with **geolocation-ba
       },
     },
   },
-  apis: ['./src/routes/*.js', './src/controllers/*.js'],
+  apis: ['./src/routes/*.js', './src/controllers/*.js', './src/app.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

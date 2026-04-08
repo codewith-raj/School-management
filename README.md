@@ -143,15 +143,28 @@ http://localhost:3000
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/health` | Health check + uptime |
+| `GET` | `/health` | Health check |
 | `POST` | `/api/schools` | Add a new school |
-| `GET` | `/api/schools?latitude=X&longitude=Y` | List schools sorted by distance |
+| `GET` | `/api/schools?latitude=X&longitude=Y&page=1&limit=10` | List schools sorted by distance (supports pagination) |
+| `POST` | `/addSchool` | Assignment alias of add-school API |
+| `GET` | `/listSchools?latitude=X&longitude=Y&page=1&limit=10` | Assignment alias of list-schools API |
 | `GET` | `/api/schools/:id` | Get single school by ID |
 | `GET` | `/api-docs` | Swagger interactive documentation |
 
 ---
 
 ## 📋 API Reference
+
+### GET `/health` — Health
+
+**Success Response `200`:**
+```json
+{
+  "status": "OK"
+}
+```
+
+---
 
 ### POST `/api/schools` — Add School
 
@@ -184,9 +197,10 @@ http://localhost:3000
     "address": "15 Ring Road, New Delhi, Delhi 110001",
     "latitude": 28.6139,
     "longitude": 77.209,
-    "createdAt": "2024-01-15T10:30:00.000Z",
-    "updatedAt": "2024-01-15T10:30:00.000Z"
-  }
+    "created_at": "2024-01-15T10:30:00.000Z",
+    "updated_at": "2024-01-15T10:30:00.000Z"
+  },
+  "errors": []
 }
 ```
 
@@ -226,6 +240,9 @@ GET /api/schools?latitude=28.6139&longitude=77.2090
   "message": "Schools retrieved and sorted by distance.",
   "data": {
     "totalCount": 3,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
     "userLocation": {
       "latitude": 28.6139,
       "longitude": 77.209
@@ -238,8 +255,8 @@ GET /api/schools?latitude=28.6139&longitude=77.2090
         "latitude": 28.6139,
         "longitude": 77.209,
         "distance": 0,
-        "createdAt": "2024-01-15T10:30:00.000Z",
-        "updatedAt": "2024-01-15T10:30:00.000Z"
+        "created_at": "2024-01-15T10:30:00.000Z",
+        "updated_at": "2024-01-15T10:30:00.000Z"
       },
       {
         "id": 3,
@@ -248,11 +265,12 @@ GET /api/schools?latitude=28.6139&longitude=77.2090
         "latitude": 30.3256,
         "longitude": 78.0335,
         "distance": 198.42,
-        "createdAt": "2024-01-15T10:32:00.000Z",
-        "updatedAt": "2024-01-15T10:32:00.000Z"
+        "created_at": "2024-01-15T10:32:00.000Z",
+        "updated_at": "2024-01-15T10:32:00.000Z"
       }
     ]
-  }
+  },
+  "errors": []
 }
 ```
 
@@ -269,8 +287,8 @@ CREATE TABLE schools (
   address    VARCHAR(500) NOT NULL,
   latitude   FLOAT        NOT NULL,
   longitude  FLOAT        NOT NULL,
-  createdAt  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updatedAt  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX idx_schools_location (latitude, longitude),
   INDEX idx_schools_name     (name)

@@ -2,6 +2,7 @@
 
 const logger = require('../utils/logger');
 const ApiError = require('../utils/ApiError');
+const { sendError } = require('../utils/responseHelper');
 
 /**
  * Global error-handling middleware.
@@ -24,61 +25,39 @@ function errorHandler(err, req, res, next) {
 
   // ── Operational / known errors ─────────────────────────
   if (err instanceof ApiError) {
-    return res.status(err.statusCode).json({
-      success: false,
-      message: err.message,
-      data: null,
-      ...(err.errors && { errors: err.errors }),
-    });
+    return sendError(res, err.statusCode, err.message, err.errors || []);
   }
 
   // ── Sequelize validation errors ───────────────────────
   if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
     const errors = err.errors.map((e) => e.message);
-    return res.status(422).json({
-      success: false,
-      message: 'Database validation error.',
-      data: null,
-      errors,
-    });
+    return sendError(res, 422, 'Database validation error.', errors);
   }
 
   // ── Sequelize connection errors ───────────────────────
   if (err.name === 'SequelizeConnectionError' || err.name === 'SequelizeConnectionRefusedError') {
-    return res.status(503).json({
-      success: false,
-      message: 'Database connection unavailable. Please try again later.',
-      data: null,
-    });
+    return sendError(res, 503, 'Database connection unavailable. Please try again later.', []);
   }
 
   // ── JSON parsing errors (malformed body) ──────────────
   if (err.type === 'entity.parse.failed') {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid JSON in request body.',
-      data: null,
-    });
+    return sendError(res, 400, 'Invalid JSON in request body.', []);
   }
 
   // ── CORS errors ───────────────────────────────────────
   if (err.message && err.message.startsWith('CORS policy')) {
-    return res.status(403).json({
-      success: false,
-      message: err.message,
-      data: null,
-    });
+    return sendError(res, 403, err.message, []);
   }
 
   // ── Fallback: unexpected / programming errors ─────────
-  return res.status(500).json({
-    success: false,
-    message:
-      process.env.NODE_ENV === 'production'
-        ? 'An unexpected error occurred. Please try again later.'
-        : err.message,
-    data: null,
-  });
+  return sendError(
+    res,
+    500,
+    process.env.NODE_ENV === 'production'
+      ? 'An unexpected error occurred. Please try again later.'
+      : err.message,
+    []
+  );
 }
 
 module.exports = errorHandler;

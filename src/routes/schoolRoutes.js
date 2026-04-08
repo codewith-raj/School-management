@@ -4,7 +4,11 @@ const express = require('express');
 const router = express.Router();
 
 const schoolController = require('../controllers/schoolController');
-const { validateAddSchool, validateListSchools } = require('../middlewares/validate');
+const {
+  validateAddSchool,
+  validateListSchools,
+  sanitizeListSchoolsQuery,
+} = require('../middlewares/validate');
 
 /**
  * @swagger
@@ -20,10 +24,10 @@ const { validateAddSchool, validateListSchools } = require('../middlewares/valid
 router.post('/', validateAddSchool, schoolController.addSchool);
 
 /**
- * GET /api/schools?latitude=X&longitude=Y
- * Validate query params → controller → service → sorted list
+ * GET /api/schools?latitude=X&longitude=Y&page=1&limit=10
+ * Sanitize + validate query params → controller → service → sorted list
  */
-router.get('/', validateListSchools, schoolController.listSchools);
+router.get('/', sanitizeListSchoolsQuery, validateListSchools, schoolController.listSchools);
 
 /**
  * GET /api/schools/:id

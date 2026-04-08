@@ -12,6 +12,13 @@ const { swaggerSpec, swaggerUI } = require('./config/swagger');
 const errorHandler = require('./middlewares/errorHandler');
 const notFoundHandler = require('./middlewares/notFoundHandler');
 const logger = require('./utils/logger');
+const schoolController = require('./controllers/schoolController');
+const {
+  validateAddSchool,
+  validateListSchools,
+  sanitizeListSchoolsQuery,
+} = require('./middlewares/validate');
+const { sendSuccess } = require('./utils/responseHelper');
 
 const app = express();
 
@@ -51,10 +58,11 @@ const limiter = rateLimit({
     success: false,
     message: 'Too many requests, please try again later.',
     data: null,
+    errors: [],
   },
 });
 
-app.use('/api', limiter);
+app.use(['/api', '/addSchool', '/listSchools'], limiter);
 
 // ─────────────────────────────────────────────
 // 3. Request parsing & compression
@@ -78,18 +86,36 @@ app.use(morganMiddleware);
 // ─────────────────────────────────────────────
 // 5. Health-check route (unauthenticated)
 // ─────────────────────────────────────────────
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'School Management API is healthy',
-    data: {
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV,
-      version: require('../package.json').version,
-    },
-  });
-});
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Service health status
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: OK
+ */
+app.get('/health', (req, res) => res.status(200).json({ status: 'OK' }));
+
+// Root route for quick browser check
+app.get('/', (req, res) =>
+  sendSuccess(res, 200, 'School Management API is running.', {
+    health: '/health',
+    docs: '/api-docs',
+    apiBase: '/api/schools',
+    assignmentAliasAddSchool: '/addSchool',
+    assignmentAliasListSchools: '/listSchools',
+  })
+);
 
 // ─────────────────────────────────────────────
 // 6. Swagger API docs
@@ -100,6 +126,10 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 // 7. API routes
 // ─────────────────────────────────────────────
 app.use('/api', routes);
+
+// Assignment-compliant alias routes
+app.post('/addSchool', validateAddSchool, schoolController.addSchool);
+app.get('/listSchools', sanitizeListSchoolsQuery, validateListSchools, schoolController.listSchools);
 
 // ─────────────────────────────────────────────
 // 8. 404 + global error handlers

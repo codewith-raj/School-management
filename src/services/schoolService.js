@@ -44,13 +44,19 @@ async function createSchool(data) {
  *
  * @param {number} userLat  - User's latitude
  * @param {number} userLon  - User's longitude
- * @returns {Promise<Array>} Array of school objects with `distance` appended (km)
+ * @returns {Promise<Object>} Sorted schools with pagination metadata
  */
-async function getSchoolsSortedByDistance(userLat, userLon) {
+async function getSchoolsSortedByDistance(userLat, userLon, page, limit) {
   const schools = await School.findAll({ raw: true });
 
   if (schools.length === 0) {
-    return [];
+    return {
+      totalCount: 0,
+      page: 1,
+      limit: 0,
+      totalPages: 0,
+      schools: [],
+    };
   }
 
   // Attach distance (km) to each school object, then sort ascending
@@ -67,7 +73,29 @@ async function getSchoolsSortedByDistance(userLat, userLon) {
     `Returning ${schoolsWithDistance.length} schools sorted by distance from (${userLat}, ${userLon})`
   );
 
-  return schoolsWithDistance;
+  const hasPagination = Number.isInteger(page) && Number.isInteger(limit);
+  if (!hasPagination) {
+    return {
+      totalCount: schoolsWithDistance.length,
+      page: 1,
+      limit: schoolsWithDistance.length,
+      totalPages: 1,
+      schools: schoolsWithDistance,
+    };
+  }
+
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const paginatedSchools = schoolsWithDistance.slice(start, end);
+  const totalPages = Math.ceil(schoolsWithDistance.length / limit);
+
+  return {
+    totalCount: schoolsWithDistance.length,
+    page,
+    limit,
+    totalPages,
+    schools: paginatedSchools,
+  };
 }
 
 /**

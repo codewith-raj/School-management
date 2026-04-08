@@ -27,14 +27,14 @@ const addSchoolSchema = Joi.object({
     'any.required': 'address is required.',
   }),
 
-  latitude: Joi.number().float().min(-90).max(90).required().messages({
+  latitude: Joi.number().min(-90).max(90).required().messages({
     'number.base': 'latitude must be a numeric value.',
     'number.min': 'latitude must be >= -90.',
     'number.max': 'latitude must be <= 90.',
     'any.required': 'latitude is required.',
   }),
 
-  longitude: Joi.number().float().min(-180).max(180).required().messages({
+  longitude: Joi.number().min(-180).max(180).required().messages({
     'number.base': 'longitude must be a numeric value.',
     'number.min': 'longitude must be >= -180.',
     'number.max': 'longitude must be <= 180.',
@@ -46,20 +46,59 @@ const addSchoolSchema = Joi.object({
  * Schema for GET /api/schools query params.
  */
 const listSchoolsSchema = Joi.object({
-  latitude: Joi.number().float().min(-90).max(90).required().messages({
+  latitude: Joi.number().min(-90).max(90).required().messages({
     'number.base': 'latitude query param must be a number.',
     'number.min': 'latitude must be >= -90.',
     'number.max': 'latitude must be <= 90.',
     'any.required': 'latitude query param is required.',
   }),
 
-  longitude: Joi.number().float().min(-180).max(180).required().messages({
+  longitude: Joi.number().min(-180).max(180).required().messages({
     'number.base': 'longitude query param must be a number.',
     'number.min': 'longitude must be >= -180.',
     'number.max': 'longitude must be <= 180.',
     'any.required': 'longitude query param is required.',
   }),
+  page: Joi.number().integer().min(1).optional().messages({
+    'number.base': 'page must be a number.',
+    'number.integer': 'page must be an integer.',
+    'number.min': 'page must be >= 1.',
+  }),
+  limit: Joi.number().integer().min(1).max(100).optional().messages({
+    'number.base': 'limit must be a number.',
+    'number.integer': 'limit must be an integer.',
+    'number.min': 'limit must be >= 1.',
+    'number.max': 'limit must be <= 100.',
+  }),
 });
+
+/**
+ * Sanitizes list-schools query params before Joi validation.
+ * Trims spaces and safely converts with Number() so invalid NaN is caught.
+ */
+function sanitizeListSchoolsQuery(req, res, next) {
+  const trimString = (value) => (typeof value === 'string' ? value.trim() : value);
+
+  req.query.latitude = trimString(req.query.latitude);
+  req.query.longitude = trimString(req.query.longitude);
+  req.query.page = trimString(req.query.page);
+  req.query.limit = trimString(req.query.limit);
+
+  if (typeof req.query.latitude === 'string' && req.query.latitude !== '') {
+    req.query.latitude = Number(req.query.latitude);
+  }
+  if (typeof req.query.longitude === 'string' && req.query.longitude !== '') {
+    req.query.longitude = Number(req.query.longitude);
+  }
+  if (typeof req.query.page === 'string' && req.query.page !== '') {
+    req.query.page = Number(req.query.page);
+  }
+  if (typeof req.query.limit === 'string' && req.query.limit !== '') {
+    req.query.limit = Number(req.query.limit);
+  }
+
+  return next();
+}
 
 // ─────────────────────────────────────────────────────────
 // Middleware factory
@@ -100,4 +139,5 @@ const validateListSchools = validate(listSchoolsSchema, 'query');
 module.exports = {
   validateAddSchool,
   validateListSchools,
+  sanitizeListSchoolsQuery,
 };

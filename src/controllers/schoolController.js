@@ -3,6 +3,7 @@
 const schoolService = require('../services/schoolService');
 const { sendSuccess } = require('../utils/responseHelper');
 const logger = require('../utils/logger');
+const ApiError = require('../utils/ApiError');
 
 /**
  * @swagger
@@ -50,6 +51,30 @@ const logger = require('../utils/logger');
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Internal server error
+ *
+ * /addSchool:
+ *   post:
+ *     summary: Add a new school (assignment alias)
+ *     tags: [Schools]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateSchoolBody'
+ *     responses:
+ *       201:
+ *         description: School created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 async function addSchool(req, res, next) {
   try {
@@ -96,6 +121,23 @@ async function addSchool(req, res, next) {
  *           maximum: 180
  *         description: Your current longitude
  *         example: 77.2090
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Optional page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Optional page size for pagination
+ *         example: 10
  *     responses:
  *       200:
  *         description: Schools sorted by distance from the given coordinates
@@ -133,21 +175,73 @@ async function addSchool(req, res, next) {
  *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Internal server error
+ *
+ * /listSchools:
+ *   get:
+ *     summary: List schools sorted by distance (assignment alias)
+ *     tags: [Schools]
+ *     parameters:
+ *       - in: query
+ *         name: latitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: longitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *     responses:
+ *       200:
+ *         description: Schools sorted by distance
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Validation error
  */
 async function listSchools(req, res, next) {
   try {
-    const { latitude, longitude } = req.query;
+    const { latitude, longitude, page, limit } = req.query;
+    const userLat = Number(latitude);
+    const userLon = Number(longitude);
+    const parsedPage = page !== undefined ? Number(page) : undefined;
+    const parsedLimit = limit !== undefined ? Number(limit) : undefined;
 
-    // query params come in as strings → parse to float
-    const userLat = parseFloat(latitude);
-    const userLon = parseFloat(longitude);
+    if (!Number.isFinite(userLat) || !Number.isFinite(userLon)) {
+      throw new ApiError(400, 'latitude and longitude must be valid numbers.', [
+        'latitude/longitude conversion failed.',
+      ]);
+    }
 
-    const schools = await schoolService.getSchoolsSortedByDistance(userLat, userLon);
+    const result = await schoolService.getSchoolsSortedByDistance(
+      userLat,
+      userLon,
+      Number.isInteger(parsedPage) ? parsedPage : undefined,
+      Number.isInteger(parsedLimit) ? parsedLimit : undefined
+    );
 
     return sendSuccess(res, 200, 'Schools retrieved and sorted by distance.', {
-      totalCount: schools.length,
+      totalCount: result.totalCount,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
       userLocation: { latitude: userLat, longitude: userLon },
-      schools,
+      schools: result.schools,
     });
   } catch (err) {
     logger.error('listSchools error:', err.message);

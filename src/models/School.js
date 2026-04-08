@@ -20,8 +20,8 @@ const { sequelize } = require('../database/connection');
  *   address     – Full address string
  *   latitude    – Latitude  (-90  to  90)
  *   longitude   – Longitude (-180 to 180)
- *   createdAt   – Auto-managed by Sequelize
- *   updatedAt   – Auto-managed by Sequelize
+ *   created_at  – Auto-managed by Sequelize
+ *   updated_at  – Auto-managed by Sequelize
  */
 class School extends Model {
   /**
@@ -79,7 +79,9 @@ School.init(
     sequelize,
     modelName: 'School',
     tableName: 'schools',
-    timestamps: true,      // createdAt, updatedAt
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     underscored: false,    // keep camelCase column names in JS
     indexes: [
       {

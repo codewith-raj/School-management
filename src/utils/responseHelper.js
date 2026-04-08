@@ -25,6 +25,7 @@ function sendSuccess(res, statusCode, message, data = null) {
     success: true,
     message,
     data,
+    errors: [],
   });
 }
 
@@ -37,17 +38,12 @@ function sendSuccess(res, statusCode, message, data = null) {
  * @param {string[]} [errors]   - Optional field-level validation errors
  */
 function sendError(res, statusCode, message, errors = []) {
-  const body = {
+  return res.status(statusCode).json({
     success: false,
     message,
     data: null,
-  };
-
-  if (errors.length > 0) {
-    body.errors = errors;
-  }
-
-  return res.status(statusCode).json(body);
+    errors,
+  });
 }
 
 module.exports = { sendSuccess, sendError };

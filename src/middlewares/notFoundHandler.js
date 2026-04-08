@@ -8,6 +8,7 @@ function notFoundHandler(req, res) {
     success: false,
     message: `Route ${req.method} ${req.originalUrl} not found.`,
     data: null,
+    errors: [],
   });
 }
 
