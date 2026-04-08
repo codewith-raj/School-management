@@ -1,207 +1,75 @@
-# School Management API
+# 🚀 School Management API
 
-Production-ready Node.js + Express + MySQL API for managing schools and listing them by proximity using the Haversine formula.
+Production-ready School Management backend built with Node.js, Express, and MySQL.  
+It supports adding schools and listing schools sorted by proximity using the Haversine formula.
 
-This project is assignment-compliant and includes both required endpoints:
-- `POST /addSchool`
-- `GET /listSchools`
+## 🔗 Live API
 
-It also includes structured MVC architecture, validation, error handling, Swagger docs, and deployment support for Render.
+- Swagger Docs: [https://school-management-lv4b.onrender.com/api-docs/](https://school-management-lv4b.onrender.com/api-docs/)
+- Health Check: [https://school-management-lv4b.onrender.com/health](https://school-management-lv4b.onrender.com/health)
+- Base URL: `https://school-management-lv4b.onrender.com`
 
 ---
 
-## Tech Stack
+## 🛠 Tech Stack
 
 - Node.js
 - Express.js
-- MySQL
+- MySQL (Railway)
 - Sequelize ORM
-- Joi validation
+- Joi Validation
 - Swagger (OpenAPI)
 - dotenv
-- morgan + winston logging
+- morgan + winston
 - helmet, cors, express-rate-limit
 
 ---
 
-## Features
+## ✨ Features
 
-- Add school with strict payload validation
-- List schools sorted by nearest distance from user coordinates
+- Add school with geolocation (`latitude`, `longitude`)
+- List schools sorted by nearest distance from user location
 - Haversine distance calculation (manual implementation)
-- Assignment alias routes:
-  - `POST /addSchool`
-  - `GET /listSchools`
-- Existing API routes:
-  - `POST /api/schools`
-  - `GET /api/schools`
-  - `GET /api/schools/:id`
-- Pagination support in list API (`page`, `limit`)
-- Unified API response format
-- Global error handling and unknown-route handling
-- Swagger docs at `/api-docs`
-- Seed script for sample school data
+- Input validation and sanitization
+- Global error handling + 404 middleware
+- Security middleware (helmet, cors, rate limiting)
+- Standardized JSON response format
+- Deployment-ready on Render
 
 ---
 
-## API Response Format
+## 📌 API Endpoints
 
-Most endpoints return:
-
-```json
-{
-  "success": true,
-  "message": "Human readable message",
-  "data": {},
-  "errors": []
-}
-```
-
-Health endpoint response:
-
-```json
-{
-  "status": "OK"
-}
-```
-
----
-
-## Project Structure
-
-```text
-school-management/
-├── src/
-│   ├── app.js
-│   ├── server.js
-│   ├── config/
-│   │   ├── config.js
-│   │   └── swagger.js
-│   ├── controllers/
-│   │   └── schoolController.js
-│   ├── database/
-│   │   ├── connection.js
-│   │   └── seeders/
-│   │       └── schoolSeeder.js
-│   ├── middlewares/
-│   │   ├── errorHandler.js
-│   │   ├── notFoundHandler.js
-│   │   └── validate.js
-│   ├── models/
-│   │   └── School.js
-│   ├── routes/
-│   │   ├── index.js
-│   │   └── schoolRoutes.js
-│   ├── services/
-│   │   └── schoolService.js
-│   └── utils/
-│       ├── ApiError.js
-│       ├── haversine.js
-│       ├── logger.js
-│       └── responseHelper.js
-├── schema.sql
-├── setup.js
-├── postman_collection.json
-├── .env.example
-├── Dockerfile
-├── docker-compose.yml
-└── package.json
-```
-
----
-
-## Database Schema
-
-Required fields for `schools`:
-- `id` (Primary Key, Auto Increment)
-- `name` (VARCHAR, NOT NULL)
-- `address` (VARCHAR, NOT NULL)
-- `latitude` (FLOAT, NOT NULL)
-- `longitude` (FLOAT, NOT NULL)
-
-Current schema also includes timestamps:
-- `created_at`
-- `updated_at`
-
-Use:
-- `schema.sql` (manual SQL setup), or
-- `npm run setup` (automatic setup script)
-
----
-
-## Local Setup
-
-### 1) Install dependencies
-
-```bash
-npm install
-```
-
-### 2) Configure environment variables
-
-Create `.env` from `.env.example` and update values:
-
-```env
-NODE_ENV=development
-PORT=3000
-
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=school_management_db
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX=100
-LOG_LEVEL=info
-ALLOWED_ORIGINS=*
-```
-
-### 3) Initialize DB and seed data
-
-```bash
-npm run setup
-npm run seed
-```
-
-### 4) Start server
-
-```bash
-npm run dev
-```
-
-or
-
-```bash
-npm start
-```
-
----
-
-## API Endpoints
-
-Base URL (local): `http://localhost:3000`
-
-### Assignment endpoints
+### Assignment Endpoints
 
 - `POST /addSchool`
-- `GET /listSchools?latitude=28.6139&longitude=77.2090`
+- `GET /listSchools?latitude=<lat>&longitude=<lon>`
 
-### Main API endpoints
+### Main Endpoints
 
 - `POST /api/schools`
-- `GET /api/schools?latitude=28.6139&longitude=77.2090&page=1&limit=10`
+- `GET /api/schools?latitude=<lat>&longitude=<lon>&page=1&limit=10`
 - `GET /api/schools/:id`
 - `GET /health`
 - `GET /api-docs`
 
 ---
 
-## Example Requests
+## 📍 Distance Logic
+
+`/listSchools` and `/api/schools` (GET) calculate distance in kilometers using the Haversine formula:
+
+- computes great-circle distance between user coordinates and each school
+- attaches `distance` field to each school
+- sorts schools in ascending order by distance
+
+---
+
+## 📦 Request / Response Examples
 
 ### Add School
 
-`POST /addSchool`
+**POST** `/addSchool`
 
 ```json
 {
@@ -212,98 +80,90 @@ Base URL (local): `http://localhost:3000`
 }
 ```
 
-### List Schools by Proximity
+### List Schools
 
-`GET /listSchools?latitude=28.6139&longitude=77.2090&page=1&limit=5`
+**GET** `/listSchools?latitude=28.6139&longitude=77.2090&page=1&limit=5`
 
----
+### Standard Response
 
-## Swagger Documentation
+```json
+{
+  "success": true,
+  "message": "Schools retrieved and sorted by distance.",
+  "data": {},
+  "errors": []
+}
+```
 
-After running the app:
+Health response:
 
-- `http://localhost:3000/api-docs`
-
-Includes:
-- `/addSchool`
-- `/listSchools`
-- `/api/schools`
-- `/health`
-
----
-
-## Postman Collection
-
-Import file:
-
-- `postman_collection.json`
-
-Collection includes assignment endpoints with sample requests/responses:
-- `POST /addSchool`
-- `GET /listSchools`
-
-Set variable:
-- `baseUrl = http://localhost:3000`
+```json
+{
+  "status": "OK"
+}
+```
 
 ---
 
-## Render Deployment Guide
+## ⚙️ Local Setup Instructions
 
-### A) Prepare repository
+1. Install dependencies
 
-1. Push this project to GitHub.
-2. Ensure `.env` is not committed and `.env.example` is present.
+```bash
+npm install
+```
 
-### B) Deploy API on Render
+2. Configure env
 
-1. Go to [Render](https://render.com) and create a **Web Service**.
-2. Connect your GitHub repository.
-3. Configure:
-   - **Runtime**: Node
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-4. Set environment variables in Render dashboard:
-   - `NODE_ENV=production`
-   - `PORT=10000` (or let Render provide `PORT`)
-   - `DB_HOST=...`
-   - `DB_PORT=3306`
-   - `DB_NAME=...`
-   - `DB_USER=...`
-   - `DB_PASSWORD=...`
-   - `RATE_LIMIT_WINDOW_MS=900000`
-   - `RATE_LIMIT_MAX=100`
-   - `LOG_LEVEL=info`
-   - `ALLOWED_ORIGINS=*` (or your frontend domain)
+```bash
+cp .env.example .env
+```
 
-### C) MySQL hosting options
+3. Initialize DB and optional seed
 
-Render does not provide native MySQL in all plans, so use one of:
-- Railway MySQL
-- PlanetScale
-- Clever Cloud MySQL
+```bash
+npm run setup
+npm run seed
+```
 
-Copy those DB credentials into Render environment variables.
+4. Run app
 
-### D) Verify after deployment
-
-Use your Render URL:
-- `https://your-app.onrender.com/health`
-- `https://your-app.onrender.com/addSchool`
-- `https://your-app.onrender.com/listSchools?latitude=28.6139&longitude=77.2090`
-- `https://your-app.onrender.com/api-docs`
+```bash
+npm run dev
+```
 
 ---
 
-## Production Notes
+## ☁️ Render Deployment (Current Live Setup)
 
-- Uses security middleware (`helmet`, `cors`, rate limiting)
-- Uses centralized error handling
-- Uses structured logging
-- Uses environment-driven configuration
-- Uses Sequelize ORM and validation layering (Joi + model checks)
+### Render service settings
+
+- Build Command: `npm install`
+- Start Command: `npm start`
+
+### Required environment variables
+
+- `NODE_ENV=production`
+- `HOST=0.0.0.0`
+- `DATABASE_URL=<your railway mysql url>`
+- `RATE_LIMIT_WINDOW_MS=900000`
+- `RATE_LIMIT_MAX=100`
+- `LOG_LEVEL=info`
+- `ALLOWED_ORIGINS=*` (or frontend domain)
+
+> Note: Render injects `PORT` automatically. Do not hardcode a different port in deployment.
 
 ---
 
-## License
+## 🧪 Testing
+
+- Import `postman_collection.json` into Postman
+- Set `baseUrl` variable:
+  - local: `http://localhost:3000`
+  - production: `https://school-management-lv4b.onrender.com`
+
+---
+
+## 📄 License
 
 MIT
