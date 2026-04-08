@@ -22,6 +22,10 @@ const { sendSuccess } = require('./utils/responseHelper');
 
 const app = express();
 
+// Behind a proxy (Render, Railway, etc.), trust the first proxy so
+// express-rate-limit & logging can use X-Forwarded-* headers safely.
+app.set('trust proxy', 1);
+
 // ─────────────────────────────────────────────
 // 1. Security middleware
 // ─────────────────────────────────────────────
