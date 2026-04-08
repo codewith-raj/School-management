@@ -6,6 +6,7 @@ const { connectDatabase } = require('./database/connection');
 const logger = require('./utils/logger');
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 /**
  * Graceful startup: connect DB first, then start HTTP server.
@@ -16,12 +17,14 @@ async function startServer() {
     await connectDatabase();
 
     // 2. Start HTTP server
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, HOST, () => {
       logger.info(`🚀 School Management API is running`);
       logger.info(`   • Environment : ${process.env.NODE_ENV}`);
+      logger.info(`   • Host        : ${HOST}`);
       logger.info(`   • Port        : ${PORT}`);
       logger.info(`   • API Base    : http://localhost:${PORT}/api`);
       logger.info(`   • Swagger     : http://localhost:${PORT}/api-docs`);
+      logger.info(`   • Health      : http://localhost:${PORT}/health`);
     });
 
     // 3. Graceful shutdown handlers
