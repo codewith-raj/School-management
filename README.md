@@ -1,97 +1,145 @@
-# 🏫 School Management API
+# School Management API
 
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)](https://nodejs.org)
-[![Express](https://img.shields.io/badge/Express-4.x-lightgrey?logo=express)](https://expressjs.com)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?logo=mysql)](https://mysql.com)
-[![Sequelize](https://img.shields.io/badge/Sequelize-6.x-blue?logo=sequelize)](https://sequelize.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+Production-ready Node.js + Express + MySQL API for managing schools and listing them by proximity using the Haversine formula.
 
-> A **production-grade**, **resume-worthy** REST API for managing school records with real-time geolocation sorting using the **Haversine formula**. Built with clean MVC architecture, full input validation, structured logging, rate limiting, Swagger docs, and Docker support.
+This project is assignment-compliant and includes both required endpoints:
+- `POST /addSchool`
+- `GET /listSchools`
+
+It also includes structured MVC architecture, validation, error handling, Swagger docs, and deployment support for Render.
 
 ---
 
-## 📁 Project Structure
+## Tech Stack
 
+- Node.js
+- Express.js
+- MySQL
+- Sequelize ORM
+- Joi validation
+- Swagger (OpenAPI)
+- dotenv
+- morgan + winston logging
+- helmet, cors, express-rate-limit
+
+---
+
+## Features
+
+- Add school with strict payload validation
+- List schools sorted by nearest distance from user coordinates
+- Haversine distance calculation (manual implementation)
+- Assignment alias routes:
+  - `POST /addSchool`
+  - `GET /listSchools`
+- Existing API routes:
+  - `POST /api/schools`
+  - `GET /api/schools`
+  - `GET /api/schools/:id`
+- Pagination support in list API (`page`, `limit`)
+- Unified API response format
+- Global error handling and unknown-route handling
+- Swagger docs at `/api-docs`
+- Seed script for sample school data
+
+---
+
+## API Response Format
+
+Most endpoints return:
+
+```json
+{
+  "success": true,
+  "message": "Human readable message",
+  "data": {},
+  "errors": []
+}
 ```
+
+Health endpoint response:
+
+```json
+{
+  "status": "OK"
+}
+```
+
+---
+
+## Project Structure
+
+```text
 school-management/
 ├── src/
-│   ├── server.js                # Entry point — graceful startup
-│   ├── app.js                   # Express app — middleware pipeline
+│   ├── app.js
+│   ├── server.js
 │   ├── config/
-│   │   ├── config.js            # Centralised env-var config
-│   │   └── swagger.js           # OpenAPI 3.0 spec
-│   ├── database/
-│   │   ├── connection.js        # Sequelize singleton + connectDatabase()
-│   │   └── seeders/
-│   │       └── schoolSeeder.js  # Seed 10 real schools (idempotent)
-│   ├── models/
-│   │   └── School.js            # Sequelize model with validations + indexes
+│   │   ├── config.js
+│   │   └── swagger.js
 │   ├── controllers/
-│   │   └── schoolController.js  # Thin HTTP layer — delegates to service
-│   ├── services/
-│   │   └── schoolService.js     # Business logic — DB ops + distance calc
-│   ├── routes/
-│   │   ├── index.js             # Root router
-│   │   └── schoolRoutes.js      # /api/schools routes
+│   │   └── schoolController.js
+│   ├── database/
+│   │   ├── connection.js
+│   │   └── seeders/
+│   │       └── schoolSeeder.js
 │   ├── middlewares/
-│   │   ├── validate.js          # Joi validation middleware
-│   │   ├── errorHandler.js      # Global error handler (4 params)
-│   │   └── notFoundHandler.js   # 404 catcher
+│   │   ├── errorHandler.js
+│   │   ├── notFoundHandler.js
+│   │   └── validate.js
+│   ├── models/
+│   │   └── School.js
+│   ├── routes/
+│   │   ├── index.js
+│   │   └── schoolRoutes.js
+│   ├── services/
+│   │   └── schoolService.js
 │   └── utils/
-│       ├── haversine.js         # Pure Haversine formula (no external API)
-│       ├── logger.js            # Winston logger (console + rotating files)
-│       ├── responseHelper.js    # Standardised JSON response envelope
-│       └── ApiError.js          # Custom operational error class
-├── schema.sql                   # Raw SQL schema (create DB + table)
-├── postman_collection.json      # Ready-to-import Postman collection
-├── Dockerfile                   # Multi-stage production Docker image
-├── docker-compose.yml           # Full stack: MySQL + API
-├── vercel.json                  # Vercel serverless config
-├── .env.example                 # Environment variable template
-├── .gitignore
+│       ├── ApiError.js
+│       ├── haversine.js
+│       ├── logger.js
+│       └── responseHelper.js
+├── schema.sql
+├── setup.js
+├── postman_collection.json
+├── .env.example
+├── Dockerfile
+├── docker-compose.yml
 └── package.json
 ```
 
 ---
 
-## ✨ Features
+## Database Schema
 
-| Feature | Implementation |
-|---|---|
-| **MVC Architecture** | Routes → Controllers → Services → Models |
-| **Input Validation** | Joi schemas — body & query params |
-| **Distance Sorting** | Haversine formula (pure JS, no external API) |
-| **Error Handling** | Global middleware, custom `ApiError` class |
-| **Logging** | Winston + Morgan (console + rotating file) |
-| **Security** | Helmet, CORS, Rate Limiting |
-| **API Docs** | Swagger UI at `/api-docs` |
-| **Database** | MySQL 8 via Sequelize ORM with indexes |
-| **Docker** | Multi-stage Dockerfile + Docker Compose |
-| **Seed Data** | 10 real Indian schools, idempotent |
+Required fields for `schools`:
+- `id` (Primary Key, Auto Increment)
+- `name` (VARCHAR, NOT NULL)
+- `address` (VARCHAR, NOT NULL)
+- `latitude` (FLOAT, NOT NULL)
+- `longitude` (FLOAT, NOT NULL)
+
+Current schema also includes timestamps:
+- `created_at`
+- `updated_at`
+
+Use:
+- `schema.sql` (manual SQL setup), or
+- `npm run setup` (automatic setup script)
 
 ---
 
-## 🚀 Quick Start
+## Local Setup
 
-### Prerequisites
-- Node.js ≥ 18
-- MySQL 8.0 (local or cloud)
-
-### 1. Clone & Install
+### 1) Install dependencies
 
 ```bash
-git clone https://github.com/your-username/school-management-api.git
-cd school-management-api
 npm install
 ```
 
-### 2. Configure Environment
+### 2) Configure environment variables
 
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
+Create `.env` from `.env.example` and update values:
 
 ```env
 NODE_ENV=development
@@ -102,350 +150,160 @@ DB_PORT=3306
 DB_NAME=school_management_db
 DB_USER=root
 DB_PASSWORD=your_mysql_password
+
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=100
+LOG_LEVEL=info
+ALLOWED_ORIGINS=*
 ```
 
-### 3. Create the Database
+### 3) Initialize DB and seed data
 
 ```bash
-# Connect to MySQL and run the schema
-mysql -u root -p < schema.sql
+npm run setup
+npm run seed
 ```
 
-Or paste the contents of `schema.sql` into MySQL Workbench / DBeaver.
-
-### 4. Run the Server
+### 4) Start server
 
 ```bash
-# Development (with hot reload)
 npm run dev
+```
 
-# Production
+or
+
+```bash
 npm start
 ```
 
-### 5. Seed Sample Data (Optional)
+---
 
-```bash
-npm run seed
-# Inserts 10 real Indian schools. Idempotent — safe to run multiple times.
-```
+## API Endpoints
+
+Base URL (local): `http://localhost:3000`
+
+### Assignment endpoints
+
+- `POST /addSchool`
+- `GET /listSchools?latitude=28.6139&longitude=77.2090`
+
+### Main API endpoints
+
+- `POST /api/schools`
+- `GET /api/schools?latitude=28.6139&longitude=77.2090&page=1&limit=10`
+- `GET /api/schools/:id`
+- `GET /health`
+- `GET /api-docs`
 
 ---
 
-## 🔌 API Endpoints
+## Example Requests
 
-### Base URL
-```
-http://localhost:3000
-```
+### Add School
 
-### Endpoints Overview
+`POST /addSchool`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check |
-| `POST` | `/api/schools` | Add a new school |
-| `GET` | `/api/schools?latitude=X&longitude=Y&page=1&limit=10` | List schools sorted by distance (supports pagination) |
-| `POST` | `/addSchool` | Assignment alias of add-school API |
-| `GET` | `/listSchools?latitude=X&longitude=Y&page=1&limit=10` | Assignment alias of list-schools API |
-| `GET` | `/api/schools/:id` | Get single school by ID |
-| `GET` | `/api-docs` | Swagger interactive documentation |
-
----
-
-## 📋 API Reference
-
-### GET `/health` — Health
-
-**Success Response `200`:**
 ```json
 {
-  "status": "OK"
-}
-```
-
----
-
-### POST `/api/schools` — Add School
-
-**Request Body:**
-```json
-{
-  "name": "Delhi Public School",
-  "address": "15 Ring Road, New Delhi, Delhi 110001",
+  "name": "ABC School",
+  "address": "Sector 1, Noida",
   "latitude": 28.6139,
   "longitude": 77.2090
 }
 ```
 
-**Validation Rules:**
-| Field | Rule |
-|-------|------|
-| `name` | Required, string, 2–255 chars |
-| `address` | Required, string, 5–500 chars |
-| `latitude` | Required, float, -90 to 90 |
-| `longitude` | Required, float, -180 to 180 |
+### List Schools by Proximity
 
-**Success Response `201`:**
-```json
-{
-  "success": true,
-  "message": "School added successfully.",
-  "data": {
-    "id": 1,
-    "name": "Delhi Public School",
-    "address": "15 Ring Road, New Delhi, Delhi 110001",
-    "latitude": 28.6139,
-    "longitude": 77.209,
-    "created_at": "2024-01-15T10:30:00.000Z",
-    "updated_at": "2024-01-15T10:30:00.000Z"
-  },
-  "errors": []
-}
-```
-
-**Validation Error `400`:**
-```json
-{
-  "success": false,
-  "message": "Validation failed.",
-  "data": null,
-  "errors": [
-    "name is required.",
-    "latitude must be <= 90."
-  ]
-}
-```
+`GET /listSchools?latitude=28.6139&longitude=77.2090&page=1&limit=5`
 
 ---
 
-### GET `/api/schools?latitude=X&longitude=Y` — List Schools
+## Swagger Documentation
 
-**Query Parameters:**
+After running the app:
 
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `latitude` | float | ✅ Yes | Your latitude (-90 to 90) |
-| `longitude` | float | ✅ Yes | Your longitude (-180 to 180) |
+- `http://localhost:3000/api-docs`
 
-**Example Request:**
-```
-GET /api/schools?latitude=28.6139&longitude=77.2090
-```
-
-**Success Response `200`:**
-```json
-{
-  "success": true,
-  "message": "Schools retrieved and sorted by distance.",
-  "data": {
-    "totalCount": 3,
-    "page": 1,
-    "limit": 10,
-    "totalPages": 1,
-    "userLocation": {
-      "latitude": 28.6139,
-      "longitude": 77.209
-    },
-    "schools": [
-      {
-        "id": 1,
-        "name": "Delhi Public School",
-        "address": "15 Ring Road, New Delhi, Delhi 110001",
-        "latitude": 28.6139,
-        "longitude": 77.209,
-        "distance": 0,
-        "created_at": "2024-01-15T10:30:00.000Z",
-        "updated_at": "2024-01-15T10:30:00.000Z"
-      },
-      {
-        "id": 3,
-        "name": "The Doon School",
-        "address": "Mall Road, Dehradun, Uttarakhand 248001",
-        "latitude": 30.3256,
-        "longitude": 78.0335,
-        "distance": 198.42,
-        "created_at": "2024-01-15T10:32:00.000Z",
-        "updated_at": "2024-01-15T10:32:00.000Z"
-      }
-    ]
-  },
-  "errors": []
-}
-```
-
-> `distance` is in **kilometres**, calculated using the **Haversine formula**.
+Includes:
+- `/addSchool`
+- `/listSchools`
+- `/api/schools`
+- `/health`
 
 ---
 
-## 🗄️ Database Schema
+## Postman Collection
 
-```sql
-CREATE TABLE schools (
-  id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  name       VARCHAR(255) NOT NULL,
-  address    VARCHAR(500) NOT NULL,
-  latitude   FLOAT        NOT NULL,
-  longitude  FLOAT        NOT NULL,
-  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  INDEX idx_schools_location (latitude, longitude),
-  INDEX idx_schools_name     (name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
+Import file:
+
+- `postman_collection.json`
+
+Collection includes assignment endpoints with sample requests/responses:
+- `POST /addSchool`
+- `GET /listSchools`
+
+Set variable:
+- `baseUrl = http://localhost:3000`
 
 ---
 
-## 🐳 Docker
+## Render Deployment Guide
 
-### Run with Docker Compose (recommended)
+### A) Prepare repository
 
-```bash
-# Builds API image + spins up MySQL container
-docker-compose up --build
+1. Push this project to GitHub.
+2. Ensure `.env` is not committed and `.env.example` is present.
 
-# Run in background
-docker-compose up --build -d
+### B) Deploy API on Render
 
-# Stop
-docker-compose down
-
-# Stop and remove volumes (wipe DB)
-docker-compose down -v
-```
-
-### Build image only
-
-```bash
-docker build -t school-mgmt-api .
-docker run -p 3000:3000 --env-file .env school-mgmt-api
-```
-
----
-
-## ☁️ Deployment
-
-### Option A — Render.com (Recommended Free Tier)
-
-1. Push code to GitHub
-2. Go to [render.com](https://render.com) → New → **Web Service**
-3. Connect your GitHub repo
-4. Set:
+1. Go to [Render](https://render.com) and create a **Web Service**.
+2. Connect your GitHub repository.
+3. Configure:
+   - **Runtime**: Node
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
-5. Add all environment variables from `.env.example`
-6. Deploy!
+4. Set environment variables in Render dashboard:
+   - `NODE_ENV=production`
+   - `PORT=10000` (or let Render provide `PORT`)
+   - `DB_HOST=...`
+   - `DB_PORT=3306`
+   - `DB_NAME=...`
+   - `DB_USER=...`
+   - `DB_PASSWORD=...`
+   - `RATE_LIMIT_WINDOW_MS=900000`
+   - `RATE_LIMIT_MAX=100`
+   - `LOG_LEVEL=info`
+   - `ALLOWED_ORIGINS=*` (or your frontend domain)
 
-**MySQL on Render:**
-- Create a new **PostgreSQL** service (free) OR use Railway/PlanetScale for MySQL
+### C) MySQL hosting options
 
----
+Render does not provide native MySQL in all plans, so use one of:
+- Railway MySQL
+- PlanetScale
+- Clever Cloud MySQL
 
-### Option B — Railway.app
+Copy those DB credentials into Render environment variables.
 
-```bash
-# Install Railway CLI
-npm i -g @railway/cli
+### D) Verify after deployment
 
-# Login
-railway login
-
-# Create project
-railway init
-
-# Add MySQL plugin from Railway dashboard
-
-# Deploy
-railway up
-```
-
-Set env vars in Railway dashboard → Variables tab.
-
----
-
-### Option C — PlanetScale (Managed MySQL)
-
-1. Sign up at [planetscale.com](https://planetscale.com)
-2. Create a database → Get connection string
-3. Update `.env`:
-   ```env
-   DB_HOST=aws.connect.psdb.cloud
-   DB_NAME=your-db-name
-   DB_USER=your-username
-   DB_PASSWORD=pscale_pw_xxx
-   NODE_ENV=production
-   ```
-4. Deploy server to Render/Railway with these env vars
+Use your Render URL:
+- `https://your-app.onrender.com/health`
+- `https://your-app.onrender.com/addSchool`
+- `https://your-app.onrender.com/listSchools?latitude=28.6139&longitude=77.2090`
+- `https://your-app.onrender.com/api-docs`
 
 ---
 
-## 📬 Postman Collection
+## Production Notes
 
-Import `postman_collection.json` into Postman:
-
-1. Open Postman → **Import** → Upload File
-2. Select `postman_collection.json`
-3. Set the `baseUrl` variable to `http://localhost:3000`
-4. All requests with example responses are ready to use
-
----
-
-## 🔬 Haversine Formula
-
-The distance between two points on Earth is calculated without any external API:
-
-```
-a = sin²(Δlat/2) + cos(lat1) · cos(lat2) · sin²(Δlon/2)
-c = 2 · atan2(√a, √(1−a))
-d = R · c        where R = 6371 km
-```
-
-Implementation: [`src/utils/haversine.js`](src/utils/haversine.js)
+- Uses security middleware (`helmet`, `cors`, rate limiting)
+- Uses centralized error handling
+- Uses structured logging
+- Uses environment-driven configuration
+- Uses Sequelize ORM and validation layering (Joi + model checks)
 
 ---
 
-## 🛡️ Security
+## License
 
-| Layer | Implementation |
-|-------|----------------|
-| HTTP Security Headers | `helmet` |
-| CORS | Configurable via `ALLOWED_ORIGINS` |
-| Rate Limiting | 100 req / 15 min per IP |
-| Input Validation | Joi — body + query |
-| SQL Injection | Sequelize parameterised queries |
-| Error Masking | Production errors are generic |
-
----
-
-## 📝 Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `NODE_ENV` | `development` | Environment |
-| `PORT` | `3000` | HTTP port |
-| `DB_HOST` | `localhost` | MySQL host |
-| `DB_PORT` | `3306` | MySQL port |
-| `DB_NAME` | `school_management_db` | Database name |
-| `DB_USER` | `root` | DB username |
-| `DB_PASSWORD` | — | DB password |
-| `RATE_LIMIT_WINDOW_MS` | `900000` | Rate limit window (ms) |
-| `RATE_LIMIT_MAX` | `100` | Max requests per window |
-| `LOG_LEVEL` | `info` | Winston log level |
-| `ALLOWED_ORIGINS` | `*` | CORS allowed origins |
-
----
-
-## 🤝 Contributing
-
-1. Fork the repo
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'feat: add amazing feature'`
-4. Push: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
----
-
-## 📜 License
-
-RAJ © 2026 — School Management API
+MIT
